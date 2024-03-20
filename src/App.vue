@@ -1,22 +1,31 @@
 <script lang="ts">
-import users from './components/users.vue'
+import players from './components/players.vue';
 
 export default {
   data() {
     return {
-
+      interval: NaN,
+      login: true,//登录做好之后这里需要改成false
+      players: [{ playerName: "test", cards: 0 }, { playerName: "yet", cards: 1 }, { playerName: "www", cards: 2 }, {playerName: "123456", cards: 5}],//全部做完之后把这里的测例删了
+      turnPlayer: "test",//同上
     }
   },
+  computed: {
+
+  },
   components: {
-    users: users
-  }
+    players: players
+  },
+  mounted() {
+
+  },
 }
 </script>
 
 <template>
   <div id="fullpage">
     <div class="block" id="left">
-      <users></users>
+      <players v-if="login" :players="players" :max-cards="players.length" :turn-player="turnPlayer"></players>
     </div>
     <div class="block" id="talk">
       <p>talk</p>
@@ -49,7 +58,7 @@ export default {
     padding: 0.5rem;
 
     display: grid;
-    grid-template: 4fr 2fr 4fr / 2fr 7fr 0.5fr;
+    grid-template: 3fr 3fr 3fr / 1.5fr 7fr 0.5fr;
     gap: 0.5rem;
     grid-template-areas:
         "left main right"
@@ -60,7 +69,9 @@ export default {
   .block {
     background-color: rgb(255, 255, 255);
 
-    border: 0.2rem solid black;
+    position: relative;
+
+    border: 0.2rem solid rgb(225, 255, 0);
     border-radius: 1rem;
     padding: 0.5rem;
     color: black;
