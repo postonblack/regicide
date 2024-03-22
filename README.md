@@ -100,3 +100,19 @@
     },
 }
 ```
+
+```javascript
+{
+    dataType: "UPDATE_ROOM_STATUS",
+    data: {
+        roomID: <roomID: number>,//int
+        maxPlayer: <maxPlayer: number>,//2,3,4
+        playerList: [
+            {
+                playerName: <playerName: string>,
+                playerPrepared: <preparedOrNot: Boolean>,
+            },
+            ...
+        ],
+    },
+}

@@ -18,7 +18,7 @@ export default {
     data() {
         return {
             localRoomStatus: {
-                roomID: 100,
+                roomID: -1,
                 maxPlayer: 4,
                 playerList: [
                     {

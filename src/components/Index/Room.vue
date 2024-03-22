@@ -10,7 +10,7 @@ export default {
         return {
             localRoomStatus: {
                 roomID: 100,
-                maxPlayer: 4,
+                maxPlayer: 3,
                 playerList: [
                     {
                         playerName: "player11111111111111",
@@ -120,8 +120,8 @@ h2 {
 .cardplace {
     position: relative;
 
-    height: 12.3rem;
-    width: 8rem;
+    height: 14rem;
+    width: 10rem;
 
     border-radius: 1rem;
     border: 0.2rem dashed black;
