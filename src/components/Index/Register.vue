@@ -83,14 +83,17 @@ export default {
             <div class="loginbox">
                 <input type="text" id="username" ref="username" v-model="username" required autocomplete="off">
                 <label for="username">账号
-                    <span v-if="isUnvalidN" class="warning"> 3-20个字符 只能包含字母和数字</span>
-                    <span v-if="existedUsername" class="warning"> 用户名已存在！</span>
+                    <Transition name="warning" mode="out-in"><span v-if="isUnvalidN" class="warning"> 3-20个字符
+                            只能包含字母和数字</span></Transition>
+                    <Transition name="warning" mode="out-in"><span v-if="existedUsername" class="warning">
+                            用户名已存在！</span></Transition>
                 </label>
             </div>
             <div class="loginbox">
                 <input type="password" id="password" ref="password" v-model="password" required autocomplete="off">
                 <label for="password">密码
-                    <span v-if="isUnvalidP" class="warning"> 3-20个字符 只能包含字母和数字</span>
+                    <Transition name="warning" mode="out-in"><span v-if="isUnvalidP" class="warning"> 3-20个字符
+                            只能包含字母和数字</span></Transition>
                 </label>
             </div>
             <div class="loginbox">
@@ -221,5 +224,16 @@ img[src$=".svg"] {
 
 button:hover #arrow-left {
     transform: translateX(-0.3rem);
+}
+
+.warning-enter-from,
+.warning-leave-to {
+    opacity: 0;
+    transform: scale(1.2);
+}
+
+.warning-enter-active,
+.warning-leave-active {
+    transition: all 0.5s ease-in-out;
 }
 </style>
