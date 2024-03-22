@@ -6,7 +6,7 @@
 
 + 客户端发送
 
-```json
+```javascript
 {
     dataType: "ASK_LOGIN",
     data: {
@@ -16,7 +16,7 @@
 }
 ```
 
-```json
+```javascript
 {
     dataType: "ASK_REGISTER",
     data: {
@@ -26,7 +26,7 @@
 }
 ```
 
-```json
+```javascript
 {
     dataType: "ASK_JOIN_ROOM",
     data: {
@@ -35,7 +35,7 @@
 }
 ```
 
-```json
+```javascript
 {
     dataType: "ACTION_CREATE_ROOM",
     data: {
@@ -44,21 +44,21 @@
 }
 ```
 
-```json
+```javascript
 {
     dataType: "ACTION_CHANGE_PREPARE",
     data: {},
 }
 ```
 
-```json
+```javascript
 {
     dataType: "ACTION_LEAVE_ROOM",
     data: {},
 }
 ```
 
-```json
+```javascript
 {
     dataTpye: "ACTION_LOGOUT",
     data: {},
@@ -67,14 +67,14 @@
 
 + 客户端接收
 
-```json
+```javascript
 {
     dataType: "ANSWER_CONNECTION",
     data: {},
 }
 ```
 
-```json
+```javascript
 {
     dataType: "ANSWER_LOGIN",
     data: {
@@ -83,7 +83,7 @@
 }
 ```
 
-```json
+```javascript
 {
     dataType: "ANSWER_REGISTER",
     data: {
@@ -92,7 +92,7 @@
 }
 ```
 
-```json
+```javascript
 {
     dataType: "ANSWER_JOIN_ROOM",
     data: {
