@@ -94,6 +94,8 @@ export default {
 
         transition: all 0.5s;
         z-index: 10;
+
+        box-shadow: 0.7rem 0.7rem 1.5rem rgba(0, 0, 0, 0.3), 0.3rem 0.3rem 0.5rem rgba(0, 0, 0, 0.5);
     }
 
     .turn {
@@ -102,6 +104,8 @@ export default {
 
         transition: all 0.5s;
         z-index: 10;
+
+        box-shadow: 1rem 1rem 3rem rgba(0, 0, 0, 0.3), 0.4rem 0.4rem 0.8rem rgba(0, 0, 0, 0.5);
     }
 
     .playerName {
@@ -113,7 +117,7 @@ export default {
         margin: 0rem 0.5rem;
         min-width: 5rem;
         align-content: center;
-
+        text-align: center;
     }
 
     .cardNumber {
@@ -124,7 +128,7 @@ export default {
         padding: 0rem 0.3rem;
         margin: 0rem 0.5rem;
         align-content: center;
-        box-shadow: 0rem 0rem 2rem rgba(0, 0, 0, 0.3), 0rem 0rem 0.5rem rgba(0, 0, 0, 0.5);
+        box-shadow: 0.2rem 0.2rem 1rem rgba(0, 0, 0, 0.3), 0.1rem 0.1rem 0.5rem rgba(0, 0, 0, 0.5);
     }
 
     .v-enter-active {
@@ -133,5 +137,6 @@ export default {
 
     .v-enter-from {
         transform: scale(1.2);
+        box-shadow: 0.5rem 0.5rem 2rem rgba(0, 0, 0, 0.3), 0.5rem 0.5rem 0.8rem rgba(0, 0, 0, 0.5);
     }
-</style>
+</style>./Players.vue

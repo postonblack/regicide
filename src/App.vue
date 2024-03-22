@@ -1,103 +1,191 @@
 <script lang="ts">
-import players from './components/players.vue';
+import Regicide from './components/Regicide.vue'
+import Login from './components/Index/Login.vue'
+import Register from './components/Index/Register.vue'
 
 export default {
-  data() {
-    return {
-      interval: NaN,
-      login: true,//登录做好之后这里需要改成false
-      players: [{ playerName: "test", cards: 0 }, { playerName: "yet", cards: 1 }, { playerName: "www", cards: 2 }, {playerName: "123456", cards: 5}],//全部做完之后把这里的测例删了
-      turnPlayer: "test",//同上
-    }
-  },
-  computed: {
+    components: {
+        Regicide,
+        Login,
+        Register,
+    },
+    data() {
+        return {
+            websocket: {} as Partial<WebSocket>,
+            reconnectInterval: 3000,
 
-  },
-  components: {
-    players: players
-  },
-  mounted() {
+            currentPage: "Login",//Login/Register/Room
 
-  },
+            isPasswordWrong: 0,//表示错误次数
+            isUsernameExisted: 0,
+        }
+    },
+    methods: {
+        setupWebSocket() {
+            this.websocket = new WebSocket("ws://darkpaper.eastasia.cloudapp.azure.com:1145");
+            this.websocket.onopen = this.onWebSocketOpen;
+            this.websocket.onmessage = this.onWebSocketMessage;
+            this.websocket.onerror = this.onWebSocketError;
+            this.websocket.onclose = this.onWebSocketClose;
+        },
+        closeWebSocket() {
+            if (this.websocket) {
+                this.websocket.close!();
+            }
+        },
+        onWebSocketOpen() {
+            console.log("链接成功");
+
+            const initMessage = {
+                dataType: "ASK_CONNECTION",
+                data: {
+                    gameName: "regicide",
+                    version: 0.1,
+                }
+            };
+            this.sendMessage(initMessage);
+        },
+        onWebSocketMessage(event: MessageEvent<string>) {
+            const message = JSON.parse(event.data);
+            console.log(message);
+
+            switch (message.dataType) {
+                case "ANSWER_CONNECTION":
+                    console.log("接受连接");
+                    break;
+
+                case "ANSWER_LOGIN":
+                    this.answerLogin(message.data);
+                    break;
+
+                case "ANSWER_REGISTER":
+                    this.answerRegister(message.data);
+                    break;
+
+                default:
+                    console.log(`错误！服务器消息格式错误：${message}`);
+                    break;
+            }
+        },
+        onWebSocketError() {
+            console.log("链接错误！");
+        },
+        onWebSocketClose() {
+            console.log("链接被关闭。");
+        },
+        sendMessage(message: object) {
+            if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+                this.websocket.send!(JSON.stringify(message));
+            } else {
+                console.log("发送消息时链接错误！");
+            }
+        },
+
+        login(username: string, password: string) {
+            const loginMessage = {
+                dataType: "ASK_LOGIN",
+                data: {
+                    username: username,
+                    password: password,
+                }
+            };
+            //console.log(loginMessage);
+            this.sendMessage(loginMessage);
+        },
+        answerLogin(data: any) {
+            switch (data.success) {
+                case true:
+                    console.log("进入房间");//TODO: 进入ROOM
+                    break;
+
+                case false:
+                    this.isPasswordWrong++;
+                    break;
+
+                default:
+                    console.log(`错误！ANSWER_LOGIN格式错误：${data}`);
+                    break;
+            }
+
+        },
+
+        register(username: string, password: string) {
+            const registerMessage = {
+                dataType: "ASK_REGISTER",
+                data: {
+                    username: username,
+                    password: password,
+                }
+            };
+            this.sendMessage(registerMessage);
+        },
+        answerRegister(data: any) {
+            switch (data.success) {
+                case true:
+                    this.gotoLogin;
+                    break;
+
+                case false:
+                    this.isUsernameExisted++;
+                    break;
+
+                default:
+                    console.log(`错误！ANSWER_REGISTER格式错误：${data}`);
+                    break;
+            }
+        },
+
+        gotoRegister() {
+            this.currentPage = "Register";
+        },
+        gotoLogin() {
+            this.currentPage = "Login";
+        },
+    },
+    mounted() {
+        this.setupWebSocket();
+    },
+    beforeUnmount() {
+        this.closeWebSocket();
+    },
 }
 </script>
 
 <template>
-  <div id="fullpage">
-    <div class="block" id="left">
-      <players v-if="login" :players="players" :max-cards="players.length" :turn-player="turnPlayer"></players>
-    </div>
-    <div class="block" id="talk">
-      <p>talk</p>
-    </div>
-    <div class="block" id="main">
-      <p>main</p>
-    </div>
-    <div class="block" id="hand">
-      <p>hand</p>
-    </div>
-    <div class="block" id="right">
-      <p>right</p>
-    </div>
-  </div>
+    <Transition name="loginPage" mode="out-in">
+        <Login v-if="currentPage==='Login'" :isPasswordWrong="isPasswordWrong" @login="login"
+            @gotoRegister="gotoRegister"></Login>
+    </Transition>
+    <Transition name="registerPage" mode="out-in">
+        <Register v-if="currentPage==='Register'" :isUsernameExisted="isUsernameExisted" @register="register"
+            @gotoLogin="gotoLogin">
+        </Register>
+    </Transition>
+    <Regicide v-if="currentPage==='Regicide'"></Regicide>
 </template>
 
 <style scoped>
-  * {
+* {
     box-sizing: border-box;
-  }
+}
 
-  #fullpage {
-    position: fixed;
-    height: 100%;
-    width: 100%;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    padding: 0.5rem;
+.loginPage-enter-from,
+.loginPage-leave-to {
+    transform: translateX(-220%);
+}
 
-    display: grid;
-    grid-template: 3fr 3fr 3fr / 1.5fr 7fr 0.5fr;
-    gap: 0.5rem;
-    grid-template-areas:
-        "left main right"
-        "talk main right"
-        "talk hand right";
-  }
+.loginPage-enter-active,
+.loginPage-leave-active {
+    transition: all 0.5s ease-in-out;
+}
 
-  .block {
-    background-color: rgb(255, 255, 255);
+.registerPage-enter-from,
+.registerPage-leave-to {
+    transform: translateX(220%);
+}
 
-    position: relative;
-
-    border: 0.2rem solid rgb(225, 255, 0);
-    border-radius: 1rem;
-    padding: 0.5rem;
-    color: black;
-
-    display: grid;
-    justify-content: center;
-    align-items: center;
-  }
-
-  #left {
-    grid-area: left;
-  }
-
-  #talk {
-    grid-area: talk;
-  }
-
-  #main {
-    grid-area: main;
-  }
-
-  #hand {
-    grid-area: hand;
-  }
-
-  #right {
-    grid-area: right;
-  }
+.registerPage-enter-active,
+.registerPage-leave-active {
+    transition: all 0.5s ease-in-out;
+}
 </style>
