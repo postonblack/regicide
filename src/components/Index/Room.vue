@@ -8,20 +8,7 @@ export default {
     },
     data() {
         return {
-            localRoomStatus: {
-                roomID: 100,
-                maxPlayer: 3,
-                playerList: [
-                    {
-                        playerName: "player11111111111111",
-                        playerPrepared: false,
-                    },
-                    {
-                        playerName: "player2",
-                        playerPrepared: true,
-                    }
-                ]
-            },
+            localRoomStatus: this.roomStatus,
             playerPlace: [] as any,
             prepared: false,
         }
@@ -134,15 +121,15 @@ h2 {
     justify-content: center;
     align-items: center;
 
-    height: 105%;
-    width: 105%;
-    top: -2.5%;
-    left: -2.5%;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
     padding: 0.5rem;
 
     background-color: white;
     border-radius: 1rem;
-    box-shadow: 0.5rem 0.5rem 1rem rgba(0, 0, 0, 0.1), 0.25rem 0.25rem 0.5rem rgba(0, 0, 0, 0.5);
+    box-shadow: 0.5rem 0.5rem 1.5rem rgba(0, 0, 0, 0.1), 0.25rem 0.25rem 1rem rgba(0, 0, 0, 0.5);
 
     font-size: x-large;
     font-family: "黑体", Arial, Helvetica, sans-serif;
@@ -153,12 +140,11 @@ h2 {
 
 .card:hover {
     transform: scale(1.1);
-    box-shadow: 1rem 1rem 1.2rem rgba(0, 0, 0, 0.12), 0.5rem 0.5rem 0.6rem rgba(0, 0, 0, 0.6);
+    box-shadow: 1rem 1rem 2rem rgba(0, 0, 0, 0.12), 0.5rem 0.5rem 1.2rem rgba(0, 0, 0, 0.6);
 }
 
 .prepared {
-    transform: translateY(-10%) scale(1.1);
-    box-shadow: 1rem 1rem 1.5rem rgba(0, 0, 0, 0.2), 0.5rem 0.5rem 0.8rem rgba(0, 0, 0, 0.7);
+    transform: translateY(-10%);
 }
 
 .prepared:hover {

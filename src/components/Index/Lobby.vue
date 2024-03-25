@@ -17,20 +17,7 @@ export default {
     },
     data() {
         return {
-            localRoomStatus: {
-                roomID: -1,
-                maxPlayer: 4,
-                playerList: [
-                    {
-                        playerName: "player1",
-                        playerPrepared: false,
-                    },
-                    {
-                        playerName: "player2",
-                        playerPrepared: true,
-                    }
-                ]
-            },
+            localRoomStatus: this.roomStatus,
             joinRoomID: "",
             notFoundRoom: 0,
             createMaxPlayer: ""
@@ -40,6 +27,10 @@ export default {
     },
     methods: {
         joinRoom() {
+            if (this.joinRoomID==='') {
+                (this.$refs.joinRoomID as HTMLInputElement).focus();
+                return;
+            }
             this.$emit("joinRoom", parseInt(this.joinRoomID));
         },
         createRoom() {
@@ -96,7 +87,7 @@ export default {
         <h1><span class="cool">REGICIDE</span></h1>
         <form @submit.prevent="joinRoom">
             <div class="box big">
-                <input type="text" id="joinRoomID" class="textinput" v-model="joinRoomID" required autocomplete="off" maxlength="6"
+                <input type="text" id="joinRoomID" ref="joinRoomID" class="textinput" v-model="joinRoomID" required autocomplete="off" maxlength="6"
                     @input="roomIDModify">
                 <label for="joinRoomID" class="textlabel">房间号
                     <Transition name="warning" mode="out-in"><span v-if="notFoundRoom" class="warning">房间不存在或已满</span>

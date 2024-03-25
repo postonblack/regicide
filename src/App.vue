@@ -1,33 +1,38 @@
 <script lang="ts">
-import Regicide from './components/Regicide.vue'
 import Login from './components/Index/Login.vue'
 import Register from './components/Index/Register.vue'
 import Lobby from './components/Index/Lobby.vue'
+import Loading from './components/Index/Loading.vue'
+import Regicide from './components/Regicide.vue'
 
 export default {
     components: {
-        Regicide,
         Login,
         Register,
         Lobby,
+        Loading,
+        Regicide,
     },
     data() {
         return {
             websocket: {} as Partial<WebSocket>,
             reconnectInterval: 3000,
 
-            currentPage: "Lobby",//Login/Register/Lobby
+            currentPage: "Login",//Login/Register/Lobby
 
             isPasswordWrong: 0,//表示错误次数
             isUsernameExisted: 0,
             roomNotFound: 0,
 
             roomStatus: {},
+
+            loading: '',
+            sleepTime: 1500,
         }
     },
     methods: {
         setupWebSocket() {
-            this.websocket = new WebSocket("ws://darkpaper.eastasia.cloudapp.azure.com:1145");
+            this.websocket = new WebSocket("wss://darkpaper.eastasia.cloudapp.azure.com:443/ws");
             this.websocket.onopen = this.onWebSocketOpen;
             this.websocket.onmessage = this.onWebSocketMessage;
             this.websocket.onerror = this.onWebSocketError;
@@ -41,6 +46,7 @@ export default {
         onWebSocketOpen() {
             console.log("链接成功");
 
+            this.loading = "CONNECTION";
             const initMessage = {
                 dataType: "ASK_CONNECTION",
                 data: {
@@ -56,19 +62,20 @@ export default {
 
             switch (message.dataType) {
                 case "ANSWER_CONNECTION":
+                    this.loading === "CONNECTION" ? this.loading = "" : console.log(`错误！未ASK的ANSWER：${message.data}`);
                     console.log("接受连接");
                     break;
 
                 case "ANSWER_LOGIN":
-                    this.answerLogin(message.data);
+                    setTimeout(() => this.answerLogin(message.data), this.sleepTime);
                     break;
 
                 case "ANSWER_REGISTER":
-                    this.answerRegister(message.data);
+                    setTimeout(() => this.answerRegister(message.data), this.sleepTime);
                     break;
 
                 case "ANSWER_JOIN_ROOM":
-                    this.answerJoinRoom(message.data);
+                    setTimeout(() => this.answerJoinRoom(message.data), this.sleepTime);
                     break;
 
                 case "UPDATE_ROOM_STATUS":
@@ -87,7 +94,7 @@ export default {
             console.log("链接被关闭。");
         },
         sendMessage(message: object) {
-            //console.log(message);
+            console.log(message);
             if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
                 this.websocket.send!(JSON.stringify(message));
             } else {
@@ -96,6 +103,7 @@ export default {
         },
 
         login(username: string, password: string) {
+            this.loading = "LOGIN";
             const loginMessage = {
                 dataType: "ASK_LOGIN",
                 data: {
@@ -106,9 +114,10 @@ export default {
             this.sendMessage(loginMessage);
         },
         answerLogin(data: any) {
+            this.loading === "LOGIN" ? this.loading = "" : console.log(`错误！未ASK的ANSWER：${data}`);
             switch (data.success) {
                 case true:
-                    this.currentPage = "Room";
+                    this.currentPage = "Lobby";
                     break;
 
                 case false:
@@ -118,11 +127,11 @@ export default {
                 default:
                     console.log(`错误！ANSWER_LOGIN格式错误：${data}`);
                     break;
-            }
-
+            };
         },
 
         register(username: string, password: string) {
+            this.loading = "REGISTER";
             const registerMessage = {
                 dataType: "ASK_REGISTER",
                 data: {
@@ -133,6 +142,7 @@ export default {
             this.sendMessage(registerMessage);
         },
         answerRegister(data: any) {
+            this.loading === "REGISTER" ? this.loading = "" : console.log(`错误！未ASK的ANSWER：${data}`);
             switch (data.success) {
                 case true:
                     this.gotoLogin();
@@ -145,10 +155,11 @@ export default {
                 default:
                     console.log(`错误！ANSWER_REGISTER格式错误：${data}`);
                     break;
-            }
+            };
         },
 
         joinRoom(joinRoomID: number) {
+            this.loading = "JOIN_ROOM";
             const joinRoomMessage = {
                 dataType: "ASK_JOIN_ROOM",
                 data: {
@@ -158,6 +169,7 @@ export default {
             this.sendMessage(joinRoomMessage);
         },
         answerJoinRoom(data: any) {
+            this.loading === "JOIN_ROOM" ? this.loading = "" : console.log(`错误！未ASK的ANSWER：${data}`);
             switch (data.success) {
                 case true:
                     break;
@@ -169,7 +181,7 @@ export default {
                 default:
                     console.log(`错误！ANSWER_JOIN_ROOM格式错误：${data}`);
                     break;
-            }
+            };
         },
 
         createRoom(createMaxPlayer: number) {
@@ -200,7 +212,7 @@ export default {
 
         logout() {
             const logoutMessage = {
-                dataTpye: "ACTION_LOGOUT",
+                dataTe: "ACTION_LOGOUT",
                 data: {},
             };
             this.sendMessage(logoutMessage);
@@ -228,6 +240,9 @@ export default {
 </script>
 
 <template>
+    <Transition name="loading" mode="out-in">
+        <Loading v-if="loading!==''"></Loading>
+    </Transition>
     <Transition name="loginPage" mode="out-in">
         <Login v-if="currentPage==='Login'" :isPasswordWrong="isPasswordWrong" @login="login"
             @gotoRegister="gotoRegister">
@@ -279,5 +294,15 @@ export default {
 .lobbyPage-enter-active,
 .lobbyPage-leave-active {
     transition: all 0.5s ease-in-out;
+}
+
+.loading-enter-from,
+.loading-leave-to {
+    opacity: 0;
+}
+
+.loading-enter-active,
+.loading-leave-active {
+    transition: all 0.2s ease-in-out;
 }
 </style>

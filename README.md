@@ -60,7 +60,7 @@
 
 ```javascript
 {
-    dataTpye: "ACTION_LOGOUT",
+    dataType: "ACTION_LOGOUT",
     data: {},
 }
 ```

@@ -14,7 +14,7 @@ export default {
             isUnvalidN: false,
             isUnvalidP: false,
 
-            existedUsername: this.isUsernameExisted,
+            existedUsername: 0,
         }
     },
     methods: {
@@ -28,12 +28,12 @@ export default {
                 (this.$refs.password as HTMLInputElement).focus();
                 return;
             }
-            if ((!/^[a-zA-Z0-9]+$/.test(this.username)) || this.username.length < 3 || this.username.length > 20) {
+            if ((!/^[a-zA-Z0-9_]{6,16}$/.test(this.username))) {
                 this.isUnvalidN = true;
                 (this.$refs.username as HTMLInputElement).focus();
                 flag = 1;
             }
-            if ((!/^[a-zA-Z0-9]+$/.test(this.password)) || this.password.length < 3 || this.password.length > 20) {
+            if ((!/^[a-zA-Z0-9_]{6,16}$/.test(this.password))) {
                 this.isUnvalidP = true;
                 if (flag === 0) {
                     (this.$refs.password as HTMLInputElement).focus();
@@ -76,15 +76,15 @@ export default {
 </script>
 
 <template>
-    <div id="login">
+    <div id="register">
         <h1><span class="cool">REGICIDE</span></h1>
         <h2>注册新账号</h2>
         <form @submit.prevent="register">
             <div class="loginbox">
                 <input type="text" id="username" ref="username" v-model="username" required autocomplete="off">
                 <label for="username">账号
-                    <Transition name="warning" mode="out-in"><span v-if="isUnvalidN" class="warning"> 3-20个字符
-                            只能包含字母和数字</span></Transition>
+                    <Transition name="warning" mode="out-in"><span v-if="isUnvalidN" class="warning"> 6-16个字符
+                            只能包含字母、数字和_</span></Transition>
                     <Transition name="warning" mode="out-in"><span v-if="existedUsername" class="warning">
                             用户名已存在！</span></Transition>
                 </label>
@@ -92,8 +92,8 @@ export default {
             <div class="loginbox">
                 <input type="password" id="password" ref="password" v-model="password" required autocomplete="off">
                 <label for="password">密码
-                    <Transition name="warning" mode="out-in"><span v-if="isUnvalidP" class="warning"> 3-20个字符
-                            只能包含字母和数字</span></Transition>
+                    <Transition name="warning" mode="out-in"><span v-if="isUnvalidP" class="warning"> 6-16个字符
+                            只能包含字母、数字和_</span></Transition>
                 </label>
             </div>
             <div class="loginbox">
@@ -105,7 +105,7 @@ export default {
 </template>
 
 <style scoped>
-#login {
+#register {
     position: fixed;
     height: 50%;
     width: 30%;
@@ -174,6 +174,9 @@ label {
     color: #646bffce;
     pointer-events: none;
     transition: all 0.25s;
+    text-wrap: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .warning {
