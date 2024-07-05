@@ -1,105 +1,60 @@
-<script lang="ts">
+<!-- eslint-disable vue/multi-word-component-names -->
+<script setup lang="ts">
+import { ref, computed, watch } from "vue";
+import { useRoomStore } from "../../stores";
+import { RoomMessageData } from "../../constents";
+import { createRoom, joinRoom, logout } from "../../web";
+
 import Room from './Room.vue'
 
-export default {
-    components: {
-        Room,
-    },
-    props: {
-        roomStatus: {
-            type: Object,
-            required: true,
-        },
-        roomNotFound: {
-            type: Number,
-            required: true,
-        },
-    },
-    data() {
-        return {
-            localRoomStatus: this.roomStatus,
-            joinRoomID: "",
-            notFoundRoom: 0,
-            createMaxPlayer: ""
-        }
-    },
-    computed: {
-    },
-    methods: {
-        joinRoom() {
-            if (this.joinRoomID==='') {
-                (this.$refs.joinRoomID as HTMLInputElement).focus();
-                return;
-            }
-            this.$emit("joinRoom", parseInt(this.joinRoomID));
-        },
-        createRoom() {
-            if (this.createMaxPlayer !== "") {
-                this.$emit("createRoom", parseInt(this.createMaxPlayer));
-            }
-        },
-        leaveRoom() {
-            this.$emit("leaveRoom");
-        },
-        logout() {
-            this.$emit("logout");
-        },
-        roomIDModify() {
-            this.joinRoomID = this.joinRoomID.replace(/[^\d]/g, '');
-        },
-        changePrepare() {
-            this.$emit("changePrepare");
-        },
-    },
-    watch: {
-        roomStatus(t) {
-            this.localRoomStatus = t;
-        },
-        roomNotFound(t: number) {
-            this.notFoundRoom = t;
-        },
-        joinRoomID() {
-            this.notFoundRoom = 0;
-        },
-    },
-    emits: {
-        joinRoom(joinRoomID: number) {
-            return joinRoomID;
-        },
-        createRoom(createMaxPlayer: number) {
-            return createMaxPlayer;
-        },
-        leaveRoom() {
-            return true;
-        },
-        logout() {
-            return true;
-        },
-        changePrepare() {
-            return true;
-        },
+const roomStore = useRoomStore();
+
+const joinRoomID = ref("");
+function roomIDModify() {
+    joinRoomID.value = joinRoomID.value.replace(/[^\d]/g, '');
+}
+const joinRoomIDInput = ref<HTMLElement | null>(null);
+function tryJoinRoom() {
+    if (joinRoomID.value === '') {
+        joinRoomIDInput.value?.focus();
+        return;
+    }
+    joinRoom(parseInt(joinRoomID.value));
+}
+
+const createMaxPlayer = ref("");
+function tryCreateRoom() {
+    if (createMaxPlayer.value !== "") {
+        createRoom(parseInt(createMaxPlayer.value));
     }
 }
+
+const roomNotFound = computed(() => roomStore.roomNotFound);
+watch(joinRoomID, () => roomStore.roomNotFound = false);
+
+const roomStatus = computed(() => {
+    return roomStore.roomStatus as RoomMessageData;
+})
 </script>
 
 <template>
     <div id="lobby">
         <h1><span class="cool">REGICIDE</span></h1>
-        <form @submit.prevent="joinRoom">
+        <form @submit.prevent="tryJoinRoom">
             <div class="box big">
-                <input type="text" id="joinRoomID" ref="joinRoomID" class="textinput" v-model="joinRoomID" required autocomplete="off" maxlength="6"
-                    @input="roomIDModify">
+                <input type="text" id="joinRoomID" ref="joinRoomIDInput" class="textinput" v-model="joinRoomID" required
+                    autocomplete="off" maxlength="6" @input="roomIDModify">
                 <label for="joinRoomID" class="textlabel">房间号
-                    <Transition name="warning" mode="out-in"><span v-if="notFoundRoom" class="warning">房间不存在或已满</span>
+                    <Transition name="warning" mode="out-in"><span v-if="roomNotFound" class="warning">房间不存在或已满</span>
                     </Transition>
                 </label>
             </div>
             <div class="box small">
-                <button type="submit" @click.prevent="joinRoom">加入房间<img src="../../../arrow-right.svg" alt=""
+                <button type="submit" @click.prevent="tryJoinRoom">加入房间<img src="../../../arrow-right.svg" alt=""
                         id="arrow-right"></button>
             </div>
         </form>
-        <form @submit.prevent="createRoom">
+        <form @submit.prevent="tryCreateRoom">
             <div class="box big">
                 <div class="card">
                     <input type="radio" name="maxplayer" id="one" value="1" class="radioinput" v-model="createMaxPlayer"
@@ -123,7 +78,7 @@ export default {
                 </div>
             </div>
             <div class="box small">
-                <button type="submit" @click.prevent="createRoom">创建房间<img src="../../../arrow-right.svg" alt=""
+                <button type="submit" @click.prevent="tryCreateRoom">创建房间<img src="../../../arrow-right.svg" alt=""
                         id="arrow-right"></button>
             </div>
         </form>
@@ -131,7 +86,7 @@ export default {
             <button @click.prevent="logout"><img src="../../../arrow-left.svg" alt="" id="arrow-left">退出登录</button>
         </div>
         <Transition name="roomCard" mode="out-in">
-            <Room v-if="localRoomStatus.roomID !== -1" :roomStatus="localRoomStatus" @leave-room="leaveRoom" @change-prepare="changePrepare"></Room>
+            <Room v-if="roomStatus.roomID !== -1"></Room>
         </Transition>
     </div>
 </template>
@@ -212,6 +167,7 @@ form {
     outline: none;
     border: none;
     border-bottom: 0.1rem solid black;
+    background-color: transparent;
     width: 100%;
     font-size: x-large;
 }
@@ -237,8 +193,8 @@ form {
     overflow: hidden;
 }
 
-.textinput:valid + .textlabel,
-.textinput:focus + .textlabel {
+.textinput:valid+.textlabel,
+.textinput:focus+.textlabel {
     top: -1.7rem;
     color: #575fff;
     font-size: large;
@@ -275,7 +231,7 @@ form {
     box-shadow: 0.25rem 0.25rem 0.25rem rgba(0, 0, 0, 0.1), 0.1rem 0.1rem 0.1rem rgba(0, 0, 0, 0.2);
 }
 
-.radioinput:checked + .radiolabel {
+.radioinput:checked+.radiolabel {
     transform: translateY(-1rem) scale(1.05);
 }
 

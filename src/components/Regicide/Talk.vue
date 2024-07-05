@@ -1,7 +1,6 @@
-<script lang="ts">
-export default {
+<!-- eslint-disable vue/multi-word-component-names -->
+<script setup lang="ts">
 
-}
 </script>
 
 <template>

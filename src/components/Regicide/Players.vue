@@ -1,53 +1,42 @@
-<script lang="ts">
-class Player {
-    public playerName: string;
-    public cards: number;
+<!-- eslint-disable vue/multi-word-component-names -->
+<script setup lang="ts">
+import { computed } from "vue";
+import { useGameStore } from "../../stores";
 
-    constructor(playerName: string, cards: number) {
-        this.playerName = playerName;
-        this.cards = cards;
+const gameStore = useGameStore();
+
+const players = computed(() => gameStore.players);
+const maxCards = computed(() => gameStore.maxCards);
+const turnPlayer = computed(() => gameStore.turnPlayer);
+
+//palyers 符合以下类
+//class Player {
+//    public playerName: string;
+//    public cards: number;
+//
+//    constructor(playerName: string, cards: number) {
+//        this.playerName = playerName;
+//        this.cards = cards;
+//    }
+//}
+
+function color(cards:number) {
+    let color = "";
+    if (cards >= 2.0 / 3 * maxCards.value) {
+        color = "rgba(0, 225, 0, 1)";//green
+    } else if (cards >= 1.0 / 3 * maxCards.value) {
+        color = "rgba(255, 165, 0, 1)";//orange
+    } else {
+        color = "rgba(225, 0, 0, 1)";//red
     }
+    return { backgroundColor: color };
 }
 
-export default {
-    props: {
-        players: {
-            type: Array<Player>,
-            required: true,
-        },
-        maxCards: {
-            type: Number,
-            required: true,
-        },
-        turnPlayer: {
-            type: String,
-            required: true,
-        }
-    },
-    data() {
-        return {
-
-        }
-    },
-    methods: {
-        color(cards: number) {
-            let color = "";
-            if (cards >= 2.0/3 * this.maxCards) {
-                color = "rgba(0, 225, 0, 1)";//green
-            } else if (cards >= 1.0/3 * this.maxCards) {
-                color = "rgba(255, 165, 0, 1)";//orange
-            } else {
-                color = "rgba(225, 0, 0, 1)";//red
-            }
-            return { backgroundColor: color };
-        },
-        turn(playerName: string) {
-            if (playerName == this.turnPlayer) {
-                return "turn";
-            } else {
-                return "";
-            }
-        }
+function turn(playerName:string) {
+    if (playerName == turnPlayer.value) {
+        return "turn";
+    } else {
+        return "";
     }
 }
 </script>

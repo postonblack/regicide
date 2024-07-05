@@ -1,77 +1,60 @@
-<script lang="ts">
-export default {
-    props: {
-        isUsernameExisted: {
-            type: Number,
-            required: true,
-        }
-    },
-    data() {
-        return {
-            username: "",
-            password: "",
+<!-- eslint-disable vue/multi-word-component-names -->
+<script setup lang="ts">
+import { computed, ref, watch } from "vue";
+import { useUserStore } from "../../stores";
+import { CURRENT_PAGE } from "../../constents";
+import { register } from "../../web";
 
-            isUnvalidN: false,
-            isUnvalidP: false,
+const username = ref("");
+const password = ref("");
 
-            existedUsername: 0,
-        }
-    },
-    methods: {
-        submit() {
-            let flag = 0;
-            if (!this.username) {
-                (this.$refs.username as HTMLInputElement).focus();
-                return;
-            }
-            if (!this.password) {
-                (this.$refs.password as HTMLInputElement).focus();
-                return;
-            }
-            if ((!/^[a-zA-Z0-9_]{6,16}$/.test(this.username))) {
-                this.isUnvalidN = true;
-                (this.$refs.username as HTMLInputElement).focus();
-                flag = 1;
-            }
-            if ((!/^[a-zA-Z0-9_]{6,16}$/.test(this.password))) {
-                this.isUnvalidP = true;
-                if (flag === 0) {
-                    (this.$refs.password as HTMLInputElement).focus();
-                    flag = 1;
-                }
-            }
-            if (flag === 1) {
-                return;
-            }
-            this.register();
-        },
-        register() {
-            this.$emit("register", this.username, this.password);
-        },
-        gotoLogin() {
-            this.$emit("gotoLogin");
-        },
-    },
-    watch: {
-        username() {
-            this.isUnvalidN = false;
-            this.existedUsername = 0;
-        },
-        password() {
-            this.isUnvalidP = false;
-        },
-        isUsernameExisted(t) {
-            this.existedUsername = t;
-        },
-    },
-    emits: {
-        register(username: string, password: string) {
-            return username && password;
-        },
-        gotoLogin() {
-            return true;
+const usernameInput = ref<HTMLElement | null>(null);
+const passwordInput = ref<HTMLElement | null>(null);
+
+const isUnvalidN = ref(false);
+const isUnvalidP = ref(false);
+
+const userStore = useUserStore();
+
+const existedUsername = computed(() => userStore.existedUsername)
+watch(username, () => {
+    isUnvalidN.value = false;
+    userStore.existedUsername = false;
+})
+watch(password, () => {
+    isUnvalidP.value = false;
+})
+
+function submit() {
+    let flag = 0;
+    if (username.value === "") {
+        usernameInput.value?.focus();
+        return;
+    }
+    if (password.value === "") {
+        passwordInput.value?.focus();
+        return;
+    }
+    if ((!/^\w{6,16}$/.test(username.value))) {
+        isUnvalidN.value = true;
+        usernameInput.value?.focus();
+        flag = 1;
+    }
+    if ((!/^\w{6,16}$/.test(password.value))) {
+        isUnvalidP.value = true;
+        if (flag === 0) {
+            passwordInput.value?.focus();
+            flag = 1;
         }
     }
+    if (flag === 1) {
+        return;
+    }
+    register(username.value, password.value);
+}
+
+function gotoLogin() {
+    userStore.currentPage = CURRENT_PAGE.Login;
 }
 </script>
 
@@ -79,9 +62,9 @@ export default {
     <div id="register">
         <h1><span class="cool">REGICIDE</span></h1>
         <h2>注册新账号</h2>
-        <form @submit.prevent="register">
+        <form @submit.prevent="submit">
             <div class="loginbox">
-                <input type="text" id="username" ref="username" v-model="username" required autocomplete="off">
+                <input type="text" id="username" ref="usernameInput" v-model="username" required autocomplete="off">
                 <label for="username">账号
                     <Transition name="warning" mode="out-in"><span v-if="isUnvalidN" class="warning"> 6-16个字符
                             只能包含字母、数字和_</span></Transition>
@@ -90,7 +73,7 @@ export default {
                 </label>
             </div>
             <div class="loginbox">
-                <input type="password" id="password" ref="password" v-model="password" required autocomplete="off">
+                <input type="password" id="password" ref="passwordInput" v-model="password" required autocomplete="off">
                 <label for="password">密码
                     <Transition name="warning" mode="out-in"><span v-if="isUnvalidP" class="warning"> 6-16个字符
                             只能包含字母、数字和_</span></Transition>

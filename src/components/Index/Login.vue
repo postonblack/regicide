@@ -1,77 +1,61 @@
-<script lang="ts">
-export default {
-    props: {
-        isPasswordWrong: {
-            type: Number,
-            required: true,
-        }
-    },
-    data() {
-        return {
-            username: "",
-            password: "",
+<!-- eslint-disable vue/multi-word-component-names -->
+<script setup lang="ts">
+import { ref, computed, watch } from "vue";
+import { useUserStore } from "../../stores";
+import { CURRENT_PAGE } from "../../constents";
+import { login } from "../../web";
 
-            isUnvalidN: false,
-            isUnvalidP: false,
+const username = ref("");
+const password = ref("");
 
-            wrongPassword: 0,
-        }
-    },
-    methods: {
-        submit() {
-            let flag = 0;
-            if (!this.username) {
-                (this.$refs.username as HTMLInputElement).focus();
-                return;
-            }
-            if (!this.password) {
-                (this.$refs.password as HTMLInputElement).focus();
-                return;
-            }
-            if ((!/^[a-zA-Z0-9_]{6,16}$/.test(this.username))) {
-                this.isUnvalidN = true;
-                (this.$refs.username as HTMLInputElement).focus();
-                flag = 1;
-            }
-            if ((!/^[a-zA-Z0-9_]{6,16}$/.test(this.password))) {
-                this.isUnvalidP = true;
-                if (flag === 0) {
-                    (this.$refs.password as HTMLInputElement).focus();
-                    flag = 1;
-                }
-            }
-            if (flag === 1) {
-                return;
-            }
-            this.login();
-        },
-        login() {
-            this.$emit("login", this.username, this.password);
-        },
-        gotoRegister() {
-            this.$emit("gotoRegister");
-        },
-    },
-    watch: {
-        username() {
-            this.isUnvalidN = false;
-        },
-        password() {
-            this.isUnvalidP = false;
-            this.wrongPassword = 0;
-        },
-        isPasswordWrong(t) {
-            this.wrongPassword = t;
-        },
-    },
-    emits: {
-        login(username: string, password: string) {
-            return username && password;
-        },
-        gotoRegister() {
-            return true;
+const usernameInput = ref<HTMLElement | null>(null);
+const passwordInput = ref<HTMLElement | null>(null);
+
+const isUnvalidN = ref(false);
+const isUnvalidP = ref(false);
+
+const userStore = useUserStore();
+
+const wrongPassword = computed(() => userStore.wrongPassword)
+watch(username, () => {
+    isUnvalidN.value = false;
+})
+watch(password, () => {
+    isUnvalidP.value = false;
+    userStore.wrongPassword = false;
+})
+
+function submit() {
+    let flag = 0;
+    if (username.value === "") {
+        usernameInput.value?.focus();
+        return;
+    }
+    if (password.value === "") {
+        passwordInput.value?.focus();
+        return;
+    }
+    if ((!/^\w{6,16}$/.test(username.value))) {
+        isUnvalidN.value = true;
+        usernameInput.value?.focus();
+        flag = 1;
+    }
+    if ((!/^\w{6,16}$/.test(password.value))) {
+        isUnvalidP.value = true;
+        if (flag === 0) {
+            passwordInput.value?.focus();
+            flag = 1;
         }
     }
+    if (flag === 1) {
+        return;
+    }
+    login(username.value, password.value);
+    userStore.username = username.value;
+}
+
+function gotoRegister() {
+    userStore.currentPage = CURRENT_PAGE.Register;
 }
 </script>
 
@@ -80,21 +64,21 @@ export default {
         <h1><span class="cool">REGICIDE</span></h1>
         <h2>by <a href="https://github.com/DarkPaper2022/regicideGame/" target="_blank">D.P.</a> & <a
                 href="https://github.com/postonblack/regicide" target="_blank">P.B.</a></h2>
-        <form @submit.prevent="login">
+        <form @submit.prevent="submit">
             <div class="box">
-                <input type="text" id="username" ref="username" v-model="username" required autocomplete="off">
+                <input type="text" id="username" ref="usernameInput" v-model="username" required autocomplete="off">
                 <label for="username">账号
                     <Transition name="warning" mode="out-in"><span v-if="isUnvalidN" class="warning"> 6-16个字符
                             只能包含字母、数字和_</span></Transition>
                 </label>
             </div>
             <div class="box">
-                <input type="password" id="password" ref="password" v-model="password" required autocomplete="off">
+                <input type="password" id="password" ref="passwordInput" v-model="password" required autocomplete="off">
                 <label for="password">密码
                     <Transition name="warning" mode="out-in"><span v-if="isUnvalidP" class="warning"> 6-16个字符
                             只能包含字母、数字和_</span></Transition>
-                    <Transition name="warning" mode="out-in"><span v-if="wrongPassword !== 0" class="warning">
-                                密码错误！</span></Transition>
+                    <Transition name="warning" mode="out-in"><span v-if="wrongPassword" class="warning">
+                            密码错误！</span></Transition>
                 </label>
             </div>
             <div class="box">

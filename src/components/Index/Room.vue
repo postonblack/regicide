@@ -1,60 +1,46 @@
-<script lang="ts">
-export default {
-    props: {
-        roomStatus: {
-            type: Object,
-            required: true,
+<!-- eslint-disable vue/multi-word-component-names -->
+<script setup lang="ts">
+import { computed } from "vue";
+import { useUserStore, useRoomStore } from "../../stores";
+import { RoomMessageData } from "../../constents";
+import { leaveRoom, changePrepare } from "../../web";
+
+const userStore = useUserStore();
+const roomStore = useRoomStore();
+
+function prepared() {
+    if (!roomStatus.value.playerList) {
+        return false;
+    }
+    for (let player of roomStatus.value.playerList) {
+        if (player.playerName === userStore.username) {
+            if (player.playerPrepared) {
+                return true;
+            }
+            return false;
         }
-    },
-    data() {
-        return {
-            localRoomStatus: this.roomStatus,
-            playerPlace: [] as any,
-            prepared: false,
-        }
-    },
-    computed: {
-        prepareButton() {
-            return this.prepared ? "取消" : "准备";
-        }
-    },
-    methods: {
-        leaveRoom() {
-            this.$emit("leaveRoom");
-        },
-        changePrepare() {
-            this.$emit("changePrepare");
-            this.prepared = !this.prepared;
-        }
-    },
-    watch: {
-        roomStatus(t) {
-            this.localRoomStatus = t;
-        }
-    },
-    emits: {
-        leaveRoom() {
-            return true;
-        },
-        changePrepare() {
-            return true;
-        },
-    },
-    mounted() {
-        this.playerPlace = Array.from({ length: this.localRoomStatus.maxPlayer }, (_, index) => index);
-    },
+    }
+    console.log("错误:用户不存在于房间中");
+    return false;
 }
+
+
+const prepareButton = computed(() => prepared() ? "取消" : "准备");
+const roomStatus = computed(() => roomStore.roomStatus as RoomMessageData);
+const playerPlace = computed(() => Array.from({ length: roomStatus.value.maxPlayer }, (_, index) => index));
 </script>
 
 <template>
     <div id="room">
-        <h2>当前房间：{{ localRoomStatus.roomID }}</h2>
+        <h2>当前房间：{{ roomStatus.roomID }}</h2>
         <div class="box">
             <div v-for="place in playerPlace" :key="place" class="cardplace">
                 <Transition name="card" mode="out-in">
-                    <div v-if="localRoomStatus.playerList[place] !== undefined" class="card"
-                        :class="{ prepared: localRoomStatus.playerList[place].playerPrepared }"><p>{{
-                        localRoomStatus.playerList[place].playerName }}</p></div>
+                    <div v-if="roomStatus.playerList[place] !== undefined" class="card"
+                        :class="{ prepared: roomStatus.playerList[place].playerPrepared }">
+                        <p>{{
+                            roomStatus.playerList[place].playerName }}</p>
+                    </div>
                 </Transition>
             </div>
         </div>
